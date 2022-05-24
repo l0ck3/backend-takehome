@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: ./takeoff
+      dockerfile: ./app/Dockerfile
+    network_mode: host
+
+  script:
+    build:
+      context: ./takeoff
+      dockerfile: ./script/Dockerfile
+    network_mode: host
+
+  redis:
+    image: redis:6.2-alpine
+    ports:
+      - 6379:6379
