@@ -20,25 +20,27 @@ export class AppService {
     const intervals = [
       {
         date: add(now, { minutes: 2 }).toUTCString(),
-        delay: 10000,
+        delay: 2 * 60 * 1000,
       },
-      this.generateInterval(19, 21, 0),
-      this.generateInterval(19, 21, 0),
-      this.generateInterval(20, 0, 0),
-      this.generateInterval(19, 0, 0),
+      this.generateInterval(19, 21, 0, task.timeZone),
+      this.generateInterval(19, 21, 0, task.timeZone),
+      this.generateInterval(20, 0, 0, task.timeZone),
+      this.generateInterval(19, 0, 0, task.timeZone),
     ];
 
     intervals.forEach((interval) => {
-      this.notificationsQueue.add(
-        'notification-job',
-        {
-          ...task,
-          scheduledDate: interval.date,
-        },
-        {
-          delay: interval.delay,
-        },
-      );
+      if (interval.delay > 0) {
+        this.notificationsQueue.add(
+          'notification-job',
+          {
+            ...task,
+            scheduledDate: interval.date,
+          },
+          {
+            delay: interval.delay,
+          },
+        );
+      }
     });
   }
 
@@ -46,12 +48,13 @@ export class AppService {
     startHour,
     endHour,
     daysFromToday,
+    timezone,
   ): { date: string; delay: number } => {
     const lowerBound = this.dateAt(daysFromToday, startHour);
     const upperBound = this.dateAt(daysFromToday, endHour);
 
     const randomDate = this.generateRandomDate(lowerBound, upperBound);
-    const delay = this.getDelay(randomDate);
+    const delay = this.getDelay(randomDate, timezone);
 
     return {
       date: randomDate.toISOString(),
@@ -59,8 +62,8 @@ export class AppService {
     };
   };
 
-  private getDelay = (setDate: Date): number => {
-    const setDateUTC = zonedTimeToUtc(setDate, 'Europe/Paris');
+  private getDelay = (setDate: Date, timezone: string): number => {
+    const setDateUTC = zonedTimeToUtc(setDate, timezone);
     const diff = differenceInMilliseconds(setDateUTC, new Date());
 
     return diff;
